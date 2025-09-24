@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Torollo To-Do</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindplus/elements@1" type="module"></script>
+</head>
+<body class="bg-gray-800">
+    <!-- Include this script tag or install `@tailwindplus/elements` via npm: -->
+<!-- <script src="https://cdn.jsdelivr.net/npm/@tailwindplus/elements@1" type="module"></script> -->
+<nav class="relative bg-gray-800/50 after:pointer-events-none after:absolute after:inset-x-0 after:bottom-0 after:h-px after:bg-white/10">
+  <div class="mx-auto max-w-7xl px-2 sm:px-6 lg:px-8">
+    <div class="relative flex h-16 items-center justify-between">
+      <div class="absolute inset-y-0 left-0 flex items-center sm:hidden">
+        <!-- Mobile menu button-->
+        <button type="button" command="--toggle" commandfor="mobile-menu" class="relative inline-flex items-center justify-center rounded-md p-2 text-gray-400 hover:bg-white/5 hover:text-white focus:outline-2 focus:-outline-offset-1 focus:outline-indigo-500">
+          <span class="absolute -inset-0.5"></span>
+          <span class="sr-only">Open main menu</span>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" data-slot="icon" aria-hidden="true" class="size-6 in-aria-expanded:hidden">
+            <path d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" stroke-linecap="round" stroke-linejoin="round" />
+          </svg>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" data-slot="icon" aria-hidden="true" class="size-6 not-in-aria-expanded:hidden">
+            <path d="M6 18 18 6M6 6l12 12" stroke-linecap="round" stroke-linejoin="round" />
+          </svg>
+        </button>
+      </div>
+      <div class="flex flex-1 items-center justify-center sm:items-stretch sm:justify-start">
+        <div class="flex shrink-0 items-center">
+          <a href="{{url_for('dashboard')}}"><img src="../static/assets/torollo.png" alt="Your Company" class="h-8 w-auto" /></a>
+        </div>
+        <div class="hidden sm:ml-6 sm:block">
+          <div class="flex space-x-4">
+            <!-- Current: "bg-gray-950/50 text-white", Default: "text-gray-300 hover:bg-white/5 hover:text-white" -->
+            <a href="{{url_for('dashboard')}}" aria-current="page" class="rounded-md bg-gray-950/50 px-3 py-2 text-sm font-medium text-white">Dashboard</a>
+          </div>
+        </div>
+      </div>
+
+  <el-disclosure id="mobile-menu" hidden class="block sm:hidden">
+    <div class="space-y-1 px-2 pt-2 pb-3">
+      <!-- Current: "bg-gray-950/50 text-white", Default: "text-gray-300 hover:bg-white/5 hover:text-white" -->
+      <a href="{{url_for('dashboard')}}" aria-current="page" class="block rounded-md bg-gray-950/50 px-3 py-2 text-base font-medium text-white">Dashboard</a>
+      <a href="#" class="block rounded-md px-3 py-2 text-base font-medium text-gray-300 hover:bg-white/5 hover:text-white">Calendar</a>
+    </div>
+  </el-disclosure>
+</nav>
+
+<form method="post" action="{{url_for('dashboard')}}" id="add-form" class="sticky top-0 z-20 bg-gray-800/80 backdrop-blur px-6 py-4 grid gap-2 md:grid-cols-[1fr_auto_auto_auto_auto] items-center">
+  <!-- Title -->
+  <input id="todo-input" name="title"
+         class="md:col-span-1 rounded-lg bg-white/10 text-white placeholder-white/50 outline-none px-4 py-2 focus:ring-2 focus:ring-indigo-500"
+         type="text" placeholder="Add a task… (e.g., Buy potting mix)" autocomplete="off" />
+
+  <!-- Notes (optional) -->
+  <input id="notes-input" name="notes"
+         class="rounded-lg bg-white/10 text-white placeholder-white/50 outline-none px-4 py-2 focus:ring-2 focus:ring-indigo-500"
+         type="text" placeholder="Notes (optional)" autocomplete="off" />
+
+  <!-- Section -->
+  <select id="section-select" name="section"
+          class="rounded-lg bg-white/10 text-white outline-none px-3 py-2 focus:ring-2 focus:ring-indigo-500">
+    <option value="daily">Daily</option>
+    <option value="weekly">Weekly</option>
+    <option value="later">Later</option>
+  </select>
+
+  <!-- Priority -->
+  <select id="priority-select" name="priority"
+          class="rounded-lg bg-white/10 text-white outline-none px-3 py-2 focus:ring-2 focus:ring-indigo-500">
+    <option value="low">Low</option>
+    <option value="med" selected>Medium</option>
+    <option value="high">High</option>
+  </select>
+
+  <!-- Add button -->
+  <button id="add-btn" type="submit"
+          class="rounded-lg bg-indigo-500 hover:bg-indigo-600 text-white px-4 py-2 disabled:opacity-50">
+    Add
+  </button>
+
+  <span id="add-error" class="text-red-400 text-sm hidden md:col-span-5">Enter a task first.</span>
+</form>
+
+
+
+<div class="flex justify-between ml-6 mt-6">
+<div class="flex justify-start">
+    <!-- DAILY -->
+<div class="bg-gray-200 shadow-xl shadow-gray-500/50 rounded-xl p-4 w-60">
+  <div class="font-semibold mb-2">Daily:</div>
+  <ul id="daily-list" class="font-thin">
+  {% for task in daily %}
+       <div class="flex justify-between bg-gray-700 rounded-md p-1 mb-2">
+            <div><li class="rounded-md text-white shadow-xl"> <span class="font-bold">·</span> {{task.title}}
+            <p class="text-gray-700 text-xs font-medium bg-gray-300 w-30 rounded p-1"> {{task.notes}} </p></div>
+            <div class="p-1"> <a href="{{url_for('delete_todo', todo_id=task.id)}}">❌</a> </div>
+            </li>
+       </div>
+   {% endfor %}
+  </ul>
+</div>
+
+<!-- WEEKLY -->
+<div class="bg-gray-900 shadow-xl shadow-gray-500/50 rounded-xl p-4 w-60 ml-5 mr-5 text-white">
+  <div class="font-semibold mb-2">Weekly:</div>
+  <ul id="weekly-list" class="font-thin text-gray-200">
+   {% for task in weekly %}
+       <div class="flex justify-between bg-gray-300 rounded-md p-1 mb-2">
+            <div><li class="rounded-md text-gray-800 shadow-xl"> <span class="font-bold">·</span> {{task.title}}
+            <p class="text-gray-100 text-xs font-medium bg-gray-700 w-30 rounded p-1"> {{task.notes}} </p></div>
+            <div class="p-1"> <a href="{{url_for('delete_todo', todo_id=task.id)}}">❌</a> </div>
+            </li>
+       </div>
+   {% endfor %}
+  </ul>
+</div>
+
+<!-- LATER -->
+<div class="bg-green-900 shadow-xl shadow-gray-500/50 rounded-xl p-4 w-60 text-white">
+  <div class="font-semibold mb-2">Later:</div>
+  <ul id="later-list" class="font-thin text-gray-20 0">
+    {% for task in later %}
+       <div class="flex justify-between bg-gray-300 rounded-md p-1 mb-2">
+            <div><li class="rounded-md text-gray-800 "> <span class="font-bold">·</span> {{task.title}}
+            {% if task.notes %}
+            <p class="text-gray-100 text-xs font-medium bg-gray-700 w-30 rounded p-1"> {{task.notes}} </p>  
+            {% else %}
+            <p></p>
+            {% endif %}
+          </div>
+            <div class="p-1"> <a href="{{url_for('delete_todo', todo_id=task.id)}}">❌</a> </div>
+            </li>
+       </div>
+   {% endfor %}
+  </ul>
+</div>
+
+</div>
+
+<div class="bg-gray-200 shadow-xl shadow-gray-500/50 rounded-xl p-4 w-60 mr-7">
+  <div class="font-semibold mb-2">By Importance:</div>
+  <ul id="daily-list" class="font-thin">
+  {% for task in by_importance %}
+       <div class="flex justify-between bg-gray-300 rounded-md p-1 mb-2">
+            <div><li class="rounded-md text-gray-800"> <span class="font-bold">·</span> {{task.title}}
+            <p> </p></div>
+            <div class="text-red-800 font-medium text-xs mt-1"> Priority: {{task.priority}} </div>
+            </li>
+       </div>
+   {% endfor %}
+  </ul>
+</div>
+</div>
+
+</div>
+</body>
+</html>
